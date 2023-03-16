@@ -49,3 +49,4 @@ python finetune.py \
 
 - bs > 1 support
 - 使用中文数据
+- 加入RLHF

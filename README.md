@@ -4,10 +4,17 @@
 
 数据集: [alpaca](https://github.com/tatsu-lab/stanford_alpaca)
 
+
+有colab的同学可以直接在colab上尝试： [colab](https://colab.research.google.com/github/mymusise/ChatGLM-Tuning/blob/master/finetune.ipynb)
+
+
 ## 准备
 
-- 显卡: 显存 >= 24G
-- 环境：pip3 install -r requirements.txt
+- 显卡: 显存 >= 16G (最好24G或者以上)
+- 环境：
+- - python>=3.8
+- - cuda>=11.6, cupti, cuDNN, TensorRT等深度学习环境
+- - pip3 install -r requirements.txt
 
 
 ## 数据预处理

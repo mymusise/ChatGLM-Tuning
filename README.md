@@ -5,7 +5,9 @@
 数据集: [alpaca](https://github.com/tatsu-lab/stanford_alpaca)
 
 
-有colab的同学可以直接在colab上尝试： [colab](https://colab.research.google.com/github/mymusise/ChatGLM-Tuning/blob/master/finetune.ipynb)
+有colab的同学可以直接在colab上尝试： <a href="https://colab.research.google.com/github/mymusise/ChatGLM-Tuning/blob/master/examples/finetune.ipynb">
+        <img alt="Build" src="https://colab.research.google.com/assets/colab-badge.svg">
+    </a>
 
 
 ## 准备

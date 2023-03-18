@@ -1,6 +1,5 @@
 import argparse
 import json
-import numpy as np
 import random
 import tqdm.auto as tqdm
 
@@ -35,10 +34,9 @@ def main():
         )
     random.shuffle(all_tokenized)
 
-    arr = np.array(all_tokenized)
-    ds = datasets.Dataset.from_dict({"input_ids": arr})
+    ds = datasets.Dataset.from_dict({"input_ids": all_tokenized})
     ds.save_to_disk(args.save_path)
-    print(f"Generated {arr.shape[0]} samples.")
+    print(f"Generated {len(all_tokenized)} samples.")
 
 
 if __name__ == "__main__":

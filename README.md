@@ -25,7 +25,7 @@
 python tokenize_dataset_rows.py \
     --jsonl_path data/alpaca_data.jsonl \
     --save_path data/alpaca \
-    --max_seq_length 512
+    --max_seq_length 320
 ```
 
 - `--jsonl_path` 微调的数据路径, 格式jsonl, 对每行的['text']字段进行encode
@@ -38,7 +38,7 @@ python tokenize_dataset_rows.py \
 python finetune.py \
     --dataset_path data/alpaca \
     --lora_rank 8 \
-    --per_device_train_batch_size 1 \
+    --per_device_train_batch_size 2 \
     --gradient_accumulation_steps 1 \
     --max_steps 52000 \
     --save_steps 1000 \
@@ -56,6 +56,6 @@ python finetune.py \
 
 # TODO:
 
-- bs > 1 support
+- ~ bs > 1 support ~
 - 使用中文数据
 - 加入RLHF

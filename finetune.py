@@ -23,20 +23,23 @@ class CastOutputToFloat(nn.Sequential):
 class ModifiedTrainer(Trainer):
 
     def compute_loss(self, model, inputs, return_outputs=False):
+        input_shape = inputs["input_ids"].shape
         return model(
             input_ids=inputs["input_ids"],
-            attention_mask=torch.ones_like(inputs["input_ids"]).bool(),
+            attention_mask=torch.ones(1, 1, input_shape[-1], input_shape[-1]).bool(),
             labels=inputs["input_ids"],
         ).loss
 
 
 def data_collator(features: list) -> dict:
-    return {
-        "input_ids": torch.stack([
-            torch.LongTensor(f["input_ids"])
-            for f in features
-        ])
-    }
+    len_ids = [len(feature['input_ids']) for feature in features]
+    longest = max(len_ids)
+    input_ids = []
+    for ids_l, feature in sorted(zip(len_ids, features), key=lambda x:-x[0]):
+        ids = feature['input_ids']
+        _ids = torch.LongTensor(ids + [150004] * (longest - ids_l))
+        input_ids.append(_ids)
+    return {"input_ids": torch.stack(input_ids)}
 
 
 def save_tunable_parameters(model, path):

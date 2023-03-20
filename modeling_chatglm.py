@@ -779,7 +779,7 @@ class ChatGLMModel(ChatGLMPreTrainedModel):
         return attention_mask
 
     def get_position_ids(self, seq, mask_position, device, gmask=False):
-        context_length = seq.index(150004) + 1
+        context_length = len(seq)
         if self.position_encoding_2d:
             seq_length = seq.index(150004)
             position_ids = torch.arange(context_length, dtype=torch.long, device=device)
@@ -949,7 +949,7 @@ class ChatGLMForConditionalGeneration(ChatGLMPreTrainedModel):
     def get_masks_and_position_ids(self, seq, mask_position, context_length, device, gmask=False):
         attention_mask = torch.ones((1, context_length, context_length), device=device)
         attention_mask.tril_()
-        attention_mask[..., :context_length - 1] = 1
+        attention_mask[..., :mask_position] = 1
         attention_mask.unsqueeze_(1)
         attention_mask = (attention_mask < 0.5).bool()
 

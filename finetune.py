@@ -26,11 +26,12 @@ class CastOutputToFloat(nn.Sequential):
 
 
 def get_masks_and_position_ids(
-    seq, mask_position, context_length, device, gmask=False, position_encoding_2d=True
+    seq, seq_len, context_length, device, gmask=False, position_encoding_2d=True
 ):
+    mask_position = seq_len - 1
     attention_mask = torch.ones((1, context_length, context_length), device=device)
     attention_mask.tril_()
-    attention_mask[..., : mask_position - 1] = 1
+    attention_mask[..., : mask_position] = 1
     attention_mask = (attention_mask < 0.5).bool()
 
     if position_encoding_2d:
@@ -69,7 +70,7 @@ def data_collator(features: list) -> dict:
         labels = [-100] * (seq_len - 1) + ids[(seq_len - 1) :]
         _ids = torch.LongTensor(ids)
         attention_mask, position_ids = get_masks_and_position_ids(
-            ids, seq_len, longest, _ids.device, gmask=True
+            ids, seq_len, longest, _ids.device, gmask=False
         )
         labels_list.append(torch.LongTensor(labels))
         input_ids.append(_ids)

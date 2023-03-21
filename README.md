@@ -21,6 +21,17 @@
 
 ## 数据预处理
 
+
+转化alpaca数据集为jsonl
+
+```bash
+python cover_alpaca2jsonl.py \
+    --data_path data/alpaca_data.json \
+    --save_path data/alpaca_data.jsonl \
+```
+
+tokenization
+
 ```bash
 python tokenize_dataset_rows.py \
     --jsonl_path data/alpaca_data.jsonl \
@@ -28,7 +39,7 @@ python tokenize_dataset_rows.py \
     --max_seq_length 320
 ```
 
-- `--jsonl_path` 微调的数据路径, 格式jsonl, 对每行的['text']字段进行encode
+- `--jsonl_path` 微调的数据路径, 格式jsonl, 对每行的['context']和['target']字段进行encode
 - `--save_path` 输出路径
 - `--max_seq_length` 样本的最大长度
 
@@ -45,6 +56,7 @@ python finetune.py \
     --save_total_limit 2 \
     --learning_rate 2e-5 \
     --fp16 \
+    --remove_unused_columns false \
     --logging_steps 50 \
     --output_dir output
 ```
@@ -56,6 +68,6 @@ python finetune.py \
 
 # TODO:
 
-- ~ bs > 1 support ~
+- ~~bs > 1 support~~
 - 使用中文数据
 - 加入RLHF

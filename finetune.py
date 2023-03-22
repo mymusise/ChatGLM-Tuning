@@ -28,14 +28,16 @@ class CastOutputToFloat(nn.Sequential):
 def get_masks_and_position_ids(
     seq, seq_len, context_length, device, gmask=False, position_encoding_2d=True
 ):
-    mask_position = seq_len - 1
+    mask_position = (
+        seq_len - 2
+    )  # is equal to `seq.index(mask_token)` or `seq.index(150001)`
     attention_mask = torch.ones((1, context_length, context_length), device=device)
     attention_mask.tril_()
-    attention_mask[..., : mask_position] = 1
+    attention_mask[..., : mask_position - 1] = 1
     attention_mask = (attention_mask < 0.5).bool()
 
     if position_encoding_2d:
-        seq_length = seq.index(tokenizer.bos_token_id)
+        seq_length = seq_len - 1  # is equal to `seq_length = seq.index(150004)`
         position_ids = torch.arange(context_length, dtype=torch.long, device=device)
         if not gmask:
             position_ids[seq_length:] = mask_position
@@ -66,8 +68,10 @@ def data_collator(features: list) -> dict:
     for ids_l, feature in sorted(zip(len_ids, features), key=lambda x: -x[0]):
         ids = feature["input_ids"]
         seq_len = feature["seq_len"]
-        ids = ids + [tokenizer.pad_token_id] * (longest - ids_l)
-        labels = [-100] * (seq_len - 1) + ids[(seq_len - 1) :]
+        labels = (
+            [-100] * (seq_len - 1) + ids[(seq_len - 1) :] + [-100] * (longest - ids_l)
+        )
+        ids = ids + [tokenizer.eos_token_id] * (longest - ids_l)
         _ids = torch.LongTensor(ids)
         attention_mask, position_ids = get_masks_and_position_ids(
             ids, seq_len, longest, _ids.device, gmask=False

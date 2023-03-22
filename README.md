@@ -1,16 +1,17 @@
 # ChatGLM-Tuning
 
-一种平价的chatgpt实现方案，基于清华的 [ChatGLM-6B](https://github.com/THUDM/ChatGLM-6B) 进行finetune.
+一种平价的chatgpt实现方案，基于清华的 [ChatGLM-6B](https://github.com/THUDM/ChatGLM-6B) + LoRA 进行finetune.
 
 数据集: [alpaca](https://github.com/tatsu-lab/stanford_alpaca)
-
 
 有colab的同学可以直接在colab上尝试： <a href="https://colab.research.google.com/github/mymusise/ChatGLM-Tuning/blob/master/examples/finetune.ipynb">
         <img alt="Build" src="https://colab.research.google.com/assets/colab-badge.svg">
     </a>
 
 
-## 准备
+## S1 Finetune
+
+### 准备
 
 - 显卡: 显存 >= 16G (最好24G或者以上)
 - 环境：
@@ -19,7 +20,7 @@
 - - pip3 install -r requirements.txt
 
 
-## 数据预处理
+### 数据预处理
 
 
 转化alpaca数据集为jsonl
@@ -43,7 +44,7 @@ python tokenize_dataset_rows.py \
 - `--save_path` 输出路径
 - `--max_seq_length` 样本的最大长度
 
-## 训练
+### 训练
 
 ```bash
 python finetune.py \
@@ -61,9 +62,24 @@ python finetune.py \
     --output_dir output
 ```
 
-# 推理
+### 推理
 
 参考 [infer.ipynb](infer.ipynb)
+
+<details><summary><b>Finetune前后对比</b></summary>
+
+利用Alpaca数据集合对ChatGLM-6B Finetune后，在Alpaca数据集上表现得更好:
+- `Answer:` 是模型的输出
+- `#### Answer:` 是原答案
+![](https://user-images.githubusercontent.com/6883957/226977555-c00c796f-4fdb-4613-810a-8b9a6068bb1b.jpeg)
+
+
+</details>
+
+
+## S2. Reward Model
+
+## S3. PPO
 
 
 # TODO:

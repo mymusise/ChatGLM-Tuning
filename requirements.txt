@@ -11,4 +11,4 @@ torch>=1.13.1
 
 # 
 datasets==2.10.1
-git+https://github.com/mymusise/peft.git@54b6ce2c0e19eed7fbba1f101c278adde64952ab
+git+https://github.com/huggingface/peft.git  # 最新版本 >=0.3.0.dev0

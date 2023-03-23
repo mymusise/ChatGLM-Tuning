@@ -17,14 +17,14 @@ def preprocess(tokenizer, example, max_seq_length=512):
     return {"input_ids": input_ids, "seq_len": len(prompt_ids)}
 
 
-def read_jsonl(path):
+def read_jsonl(path, max_seq_length):
     tokenizer = transformers.AutoTokenizer.from_pretrained(
         "THUDM/chatglm-6b", trust_remote_code=True
     )
     with open(path, "r") as f:
-        for line in tqdm(f):
+        for line in tqdm(f.readlines()):
             example = json.loads(line)
-            yield preprocess(tokenizer, example)
+            yield preprocess(tokenizer, example, max_seq_length)
 
 
 def main():
@@ -35,7 +35,7 @@ def main():
     args = parser.parse_args()
 
     dataset = datasets.Dataset.from_generator(
-        lambda: read_jsonl("data/alpaca_data.jsonl")
+        lambda: read_jsonl(args.jsonl_path, args.max_seq_length)
     )
     dataset.save_to_disk(args.save_path)
 

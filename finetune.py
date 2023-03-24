@@ -60,7 +60,7 @@ def get_masks_and_position_ids(
 
 def data_collator(features: list) -> dict:
     len_ids = [len(feature["input_ids"]) for feature in features]
-    longest = max(len_ids) + 1
+    longest = max(len_ids)
     input_ids = []
     attention_mask_list = []
     position_ids_list = []
@@ -71,10 +71,9 @@ def data_collator(features: list) -> dict:
         labels = (
             [-100] * (seq_len - 1)
             + ids[(seq_len - 1) :]
-            + [tokenizer.eos_token_id]
-            + [-100] * (longest - ids_l - 1)
+            + [-100] * (longest - ids_l)
         )
-        ids = ids + [tokenizer.eos_token_id] * (longest - ids_l)
+        ids = ids + [tokenizer.pad_token_id] * (longest - ids_l)
         _ids = torch.LongTensor(ids)
         attention_mask, position_ids = get_masks_and_position_ids(
             ids, seq_len, longest, _ids.device, gmask=False

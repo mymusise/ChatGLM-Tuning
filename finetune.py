@@ -103,6 +103,12 @@ class ModifiedTrainer(Trainer):
             labels=inputs["labels"],
         ).loss
 
+    def save_model(self, output_dir=None, _internal_call=False):
+        from transformers.trainer import TRAINING_ARGS_NAME
+        os.makedirs(output_dir, exist_ok=True)
+        torch.save(self.args, os.path.join(output_dir, TRAINING_ARGS_NAME))
+        save_tunable_parameters(self.model, os.path.join(output_dir, "chatglm-lora.pt"))
+
 
 def save_tunable_parameters(model, path):
     saved_params = {

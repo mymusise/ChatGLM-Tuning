@@ -13,7 +13,7 @@ def preprocess(tokenizer, example, max_seq_length):
     target_ids = tokenizer.encode(
         target, max_length=max_seq_length, truncation=True, add_special_tokens=False
     )
-    input_ids = prompt_ids + target_ids + [tokenizer.eos_token_id]
+    input_ids = prompt_ids + target_ids + [150005]
     return {"input_ids": input_ids, "seq_len": len(prompt_ids)}
 
 

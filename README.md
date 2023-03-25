@@ -37,7 +37,8 @@ tokenization
 python tokenize_dataset_rows.py \
     --jsonl_path data/alpaca_data.jsonl \
     --save_path data/alpaca \
-    --max_seq_length 320
+    --max_seq_length 200 \ 
+    --skip_overlength
 ```
 
 - `--jsonl_path` 微调的数据路径, 格式jsonl, 对每行的['context']和['target']字段进行encode
@@ -50,12 +51,12 @@ python tokenize_dataset_rows.py \
 python finetune.py \
     --dataset_path data/alpaca \
     --lora_rank 8 \
-    --per_device_train_batch_size 2 \
+    --per_device_train_batch_size 6 \
     --gradient_accumulation_steps 1 \
     --max_steps 52000 \
     --save_steps 1000 \
     --save_total_limit 2 \
-    --learning_rate 2e-5 \
+    --learning_rate 1e-4 \
     --fp16 \
     --remove_unused_columns false \
     --logging_steps 50 \
@@ -80,6 +81,18 @@ python finetune.py \
 ## S2. Reward Model
 
 ## S3. PPO
+
+
+## LoRA
+
+| LoRA      | Dataset |
+| ----------- | ----------- |
+| mymusise/chatglm-6b-alpaca-lora      | Alpaca       |
+| *(on the way)*      | Alpaca-zh       |
+
+### 使用预训练好的LoRA
+
+参考 [examples/infer_pretrain.ipynb](https://colab.research.google.com/github/mymusise/ChatGLM-Tuning/blob/master/examples/infer_pretrain.ipynb)
 
 
 # TODO:

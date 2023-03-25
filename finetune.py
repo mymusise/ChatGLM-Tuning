@@ -107,14 +107,10 @@ class ModifiedTrainer(Trainer):
         from transformers.trainer import TRAINING_ARGS_NAME
         os.makedirs(output_dir, exist_ok=True)
         torch.save(self.args, os.path.join(output_dir, TRAINING_ARGS_NAME))
-        save_tunable_parameters(self.model, os.path.join(output_dir, "chatglm-lora.pt"))
-
-
-def save_tunable_parameters(model, path):
-    saved_params = {
-        k: v.to("cpu") for k, v in model.named_parameters() if v.requires_grad
-    }
-    torch.save(saved_params, path)
+        saved_params = {
+            k: v.to("cpu") for k, v in self.model.named_parameters() if v.requires_grad
+        }
+        torch.save(saved_params, os.path.join(output_dir, "adapter_model.bin"))
 
 
 def main():
@@ -158,9 +154,7 @@ def main():
     trainer.train()
 
     # save model
-    save_tunable_parameters(
-        model, os.path.join(training_args.output_dir, "chatglm-lora.pt")
-    )
+    model.save_pretrained(training_args.output_dir)
 
 
 if __name__ == "__main__":

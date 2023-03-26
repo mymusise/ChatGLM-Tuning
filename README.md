@@ -9,6 +9,11 @@
     </a>
 
 
+## Demo
+
+- [开源版的文心一言](!https://github.com/visual-openllm/visual-openllm)
+
+
 ## S1 Finetune
 
 ### 准备
@@ -85,10 +90,11 @@ python finetune.py \
 
 ## LoRA
 
-| LoRA      | Dataset |
-| ----------- | ----------- |
-| mymusise/chatglm-6b-alpaca-lora      | Alpaca       |
-| *(on the way)*      | Alpaca-zh       |
+| LoRA                                  | Dataset      |
+| ------------------------------------- | ------------ |
+| mymusise/chatglm-6b-alpaca-lora       | Alpaca       |
+| mymusise/chatglm-6b-alpaca-zh-en-lora | Alpaca-zh-en |
+| *(on the way)*                        | Alpaca-zh    |
 
 ### 使用预训练好的LoRA
 

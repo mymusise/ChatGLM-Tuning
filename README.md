@@ -11,7 +11,7 @@
 
 ## Demo
 
-- [开源版的文心一言](!https://github.com/visual-openllm/visual-openllm)
+- [开源版的文心一言](https://github.com/visual-openllm/visual-openllm)
 
 
 ## S1 Finetune

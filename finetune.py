@@ -1,3 +1,5 @@
+from transformers.integrations import TensorBoardCallback
+from torch.utils.tensorboard import SummaryWriter
 from transformers import TrainingArguments
 from transformers import Trainer, HfArgumentParser
 from transformers import AutoTokenizer
@@ -114,6 +116,7 @@ class ModifiedTrainer(Trainer):
 
 
 def main():
+    writer = SummaryWriter()
     finetune_args, training_args = HfArgumentParser(
         (FinetuneArguments, TrainingArguments)
     ).parse_args_into_dataclasses()
@@ -149,10 +152,11 @@ def main():
         model=model,
         train_dataset=dataset,
         args=training_args,
+        callbacks=[TensorBoardCallback(writer)],
         data_collator=data_collator,
     )
     trainer.train()
-
+    writer.close()
     # save model
     model.save_pretrained(training_args.output_dir)
 

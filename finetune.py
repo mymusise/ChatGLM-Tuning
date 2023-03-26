@@ -20,10 +20,6 @@ class FinetuneArguments:
     lora_rank: int = field(default=8)
 
 
-class CastOutputToFloat(nn.Sequential):
-    def forward(self, x):
-        return super().forward(x).to(torch.float32)
-
 
 def get_masks_and_position_ids(
     seq, seq_len, context_length, device, gmask=False, position_encoding_2d=True
@@ -126,7 +122,6 @@ def main():
     model.enable_input_require_grads()
     model.is_parallelizable = True
     model.model_parallel = True
-    model.lm_head = CastOutputToFloat(model.lm_head)
     model.config.use_cache = (
         False  # silence the warnings. Please re-enable for inference!
     )

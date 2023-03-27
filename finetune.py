@@ -111,7 +111,16 @@ class ModifiedTrainer(Trainer):
             k: v.to("cpu") for k, v in self.model.named_parameters() if v.requires_grad
         }
         torch.save(saved_params, os.path.join(output_dir, "adapter_model.bin"))
-
+        if self.model.peft_config.base_model_name_or_path is None:
+            self.model.peft_config.base_model_name_or_path = (
+                self.model.base_model.__dict__.get("name_or_path", None)
+                if isinstance(self.model.peft_config, PromptLearningConfig)
+                else self.model.base_model.model.__dict__.get("name_or_path", None)
+            )
+        inference_mode = self.model.peft_config.inference_mode
+        self.model.peft_config.inference_mode = True
+        self.model.peft_config.save_pretrained(output_dir)
+        self.model.peft_config.inference_mode = inference_mode
 
 def main():
     finetune_args, training_args = HfArgumentParser(

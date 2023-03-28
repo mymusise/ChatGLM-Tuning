@@ -33,7 +33,7 @@ def get_masks_and_position_ids(
     )  # is equal to `seq.index(mask_token)` or `seq.index(150001)`
     attention_mask = torch.ones((1, context_length, context_length), device=device)
     attention_mask.tril_()
-    attention_mask[..., : mask_position - 1] = 1
+    attention_mask[..., : mask_position + 1] = 1
     attention_mask = (attention_mask < 0.5).bool()
 
     if position_encoding_2d:

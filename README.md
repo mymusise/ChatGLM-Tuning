@@ -9,6 +9,9 @@
     </a>
 
 
+[官方ptuning代码](https://github.com/THUDM/ChatGLM-6B/blob/main/ptuning)
+
+
 ## Demo
 
 - [开源版的文心一言](https://github.com/visual-openllm/visual-openllm)

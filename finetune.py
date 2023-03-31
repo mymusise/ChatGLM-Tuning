@@ -6,7 +6,7 @@ from transformers import AutoTokenizer
 from modeling_chatglm import ChatGLMForConditionalGeneration
 import torch
 import torch.nn as nn
-from peft import get_peft_model, LoraConfig, TaskType
+from peft import get_peft_model, prepare_model_for_int8_training, LoraConfig, TaskType
 from dataclasses import dataclass, field
 import datasets
 import os
@@ -20,11 +20,6 @@ class FinetuneArguments:
     dataset_path: str = field(default="data/alpaca")
     model_path: str = field(default="output")
     lora_rank: int = field(default=8)
-
-
-class CastOutputToFloat(nn.Sequential):
-    def forward(self, x):
-        return super().forward(x).to(torch.float32)
 
 
 def get_masks_and_position_ids(
@@ -129,10 +124,10 @@ def main():
     model.enable_input_require_grads()
     model.is_parallelizable = True
     model.model_parallel = True
-    model.lm_head = CastOutputToFloat(model.lm_head)
     model.config.use_cache = (
         False  # silence the warnings. Please re-enable for inference!
     )
+    model = prepare_model_for_int8_training(model)
 
     # setup peft
     peft_config = LoraConfig(

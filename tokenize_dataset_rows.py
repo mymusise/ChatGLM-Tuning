@@ -9,13 +9,15 @@ import transformers
 def preprocess(tokenizer, config, example, max_seq_length):
     prompt = example["context"]
     target = example["target"]
-    prompt_ids = tokenizer.encode(prompt, max_length=max_seq_length, truncation=True)
+    prompt_ids = tokenizer.encode(prompt, max_length=max_seq_length, truncation=True,return_attention_mask=False,
+                add_special_tokens=False)
     target_ids = tokenizer.encode(
         target,
         max_length=max_seq_length,
         truncation=True,
+        return_attention_mask=False,
         add_special_tokens=False)
-    input_ids = prompt_ids + target_ids + [config.eos_token_id]
+    input_ids = prompt_ids + [150001, 150004] + target_ids + [150005]
     return {"input_ids": input_ids, "seq_len": len(prompt_ids)}
 
 

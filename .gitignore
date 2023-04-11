@@ -1,5 +1,6 @@
 # model file
 
+.idea
 models/llama/*
 models/llama-hf/llama-7b/*.bin
 models/pefts/*.bin
@@ -7,6 +8,8 @@ models/pefts/*.bin
 data/*
 outputs/*
 output/*
+long_doc_extract/data*
+long_doc_extract/evaluate-log-prompt*
 
 
 

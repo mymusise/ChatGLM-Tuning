@@ -10,8 +10,7 @@ from dataclasses import dataclass, field
 import datasets
 import os
 
-
-tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm-6b", trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained("/work/models/chatglm-6b", trust_remote_code=True)
 
 
 @dataclass
@@ -35,7 +34,7 @@ def data_collator(features: list) -> dict:
         ids = feature["input_ids"]
         seq_len = feature["seq_len"]
         labels = (
-            [-100] * (seq_len - 1) + ids[(seq_len - 1) :] + [-100] * (longest - ids_l)
+                [-100] * (seq_len - 1) + ids[(seq_len - 1):] + [-100] * (longest - ids_l)
         )
         ids = ids + [tokenizer.pad_token_id] * (longest - ids_l)
         _ids = torch.LongTensor(ids)
@@ -74,8 +73,8 @@ def main():
     ).parse_args_into_dataclasses()
 
     # init model
-    model = AutoModel.from_pretrained(
-        "THUDM/chatglm-6b", load_in_8bit=True, trust_remote_code=True, device_map="auto"
+    model = ChatGLMForConditionalGeneration.from_pretrained(
+        "/work/models/chatglm-6b", load_in_8bit=True, trust_remote_code=True, device_map="auto"
     )
     model.gradient_checkpointing_enable()
     model.enable_input_require_grads()

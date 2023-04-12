@@ -9,13 +9,13 @@ def format_example(example: dict) -> dict:
     #     context += f"Input: {example['input']}\n"
     # context += "Answer: "
     # target = example["output"]
-    return {"context": example['input'], "target": example['target']}
+    return {"content": example['content'], "summary": example['summary']}
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_path", type=str, default="")
-    parser.add_argument("--save_path", type=str, default="")
+    parser.add_argument("--data_path", type=str, default="./data-taobao/AdvertiseGen/train.json")
+    parser.add_argument("--save_path", type=str, default="./data-taobao/AdvertiseGen/train_json_list.json")
 
     args = parser.parse_args()
     with open(args.data_path) as f:

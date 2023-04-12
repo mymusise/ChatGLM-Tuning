@@ -7,8 +7,8 @@ import transformers
 
 
 def preprocess(tokenizer, config, example, max_seq_length):
-    prompt = example["context"]
-    target = example["target"]
+    prompt = example["content"]
+    target = example["summary"]
     prompt_ids = tokenizer.encode(prompt, max_length=max_seq_length, truncation=True)
     target_ids = tokenizer.encode(
         target,
@@ -20,7 +20,7 @@ def preprocess(tokenizer, config, example, max_seq_length):
 
 
 def read_jsonl(path, max_seq_length, skip_overlength=False):
-    model_name = "THUDM/chatglm-6b"
+    model_name = "/work/models/chatglm-6b"
     tokenizer = transformers.AutoTokenizer.from_pretrained(
         model_name, trust_remote_code=True)
     config = transformers.AutoConfig.from_pretrained(
@@ -37,10 +37,10 @@ def read_jsonl(path, max_seq_length, skip_overlength=False):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--jsonl_path", type=str, default="data/alpaca_data.jsonl")
-    parser.add_argument("--save_path", type=str, default="data/alpaca")
-    parser.add_argument("--max_seq_length", type=int, default=384)
-    parser.add_argument("--skip_overlength", type=bool, default=False)
+    parser.add_argument("--jsonl_path", type=str, default="./data-taobao/AdvertiseGen/train_json_list.json")
+    parser.add_argument("--save_path", type=str, default="./data-taobao/AdvertiseGen/tokenized-data")
+    parser.add_argument("--max_seq_length", type=int, default=300)
+    parser.add_argument("--skip_overlength", type=bool, default=True)
     args = parser.parse_args()
 
     dataset = datasets.Dataset.from_generator(

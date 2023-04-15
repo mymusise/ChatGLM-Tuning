@@ -7,8 +7,8 @@ import transformers
 
 
 def preprocess(tokenizer, config, example, max_seq_length):
-    prompt = example["content"]
-    target = example["summary"]
+    prompt = example["instruction"]
+    target = example["output"]
     prompt_ids = tokenizer.encode(prompt, max_length=max_seq_length, truncation=True)
     target_ids = tokenizer.encode(
         target,
@@ -37,8 +37,8 @@ def read_jsonl(path, max_seq_length, skip_overlength=False):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--jsonl_path", type=str, default="./data-taobao/AdvertiseGen/train_json_list.json")
-    parser.add_argument("--save_path", type=str, default="./data-taobao/AdvertiseGen/tokenized-data")
+    parser.add_argument("--jsonl_path", type=str, default="./data-renmin/train_json_list.json")
+    parser.add_argument("--save_path", type=str, default="./data-renmin/tokenized-data")
     parser.add_argument("--max_seq_length", type=int, default=300)
     parser.add_argument("--skip_overlength", type=bool, default=True)
     args = parser.parse_args()

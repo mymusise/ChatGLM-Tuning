@@ -85,17 +85,12 @@ python finetune.py \
 
 </details>
 
-### rest api
+### 部署
 
-需要额外安装 `pip install fastapi uvicorn`。使用前需要修改peft_config中的`r`与你训练时的`--lora_rank`一致。然后运行`api.py`：
+文件夹下`web_demo.py`，`web_demo2.py`与`api.py`的使用方法与官方的一致。
 
-```bash
-python app.py
-```
+使用前需要修改`peft_path`为你自己训练的模型路径，修改`peft_config`中的`r`与你训练时的`--lora_rank`一致。
 
-调用方法与ChatGLM-6B官方的`api.py`一致。
-
-为了让模型输出时尽量贴合训练数据，我在调用chat时增加了`do_sample=False`，这样模型输出的结果一致，不会出现随机性。请根据自己的需求选择是否使用`do_sample=True`。
 
 ## S2. Reward Model
 

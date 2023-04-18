@@ -37,8 +37,7 @@ async def chat(request: Request):
                                    history=history,
                                    max_length=max_length if max_length else 2048,
                                    top_p=top_p if top_p else 0.7,
-                                   temperature=temperature if temperature else 0.95,
-                                   do_sample=False)
+                                   temperature=temperature if temperature else 0.95)
     now = datetime.datetime.now()
     time = now.strftime("%Y-%m-%d %H:%M:%S")
     answer = {

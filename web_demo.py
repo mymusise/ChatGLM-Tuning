@@ -3,15 +3,23 @@ import gradio as gr
 import mdtex2html
 from peft import get_peft_model, LoraConfig, TaskType
 import torch
+import argparse
 
 tokenizer = AutoTokenizer.from_pretrained(
     "THUDM/chatglm-6b", trust_remote_code=True)
 model = AutoModel.from_pretrained(
     "THUDM/chatglm-6b", trust_remote_code=True).half().cuda()
-peft_path = "output/adapter_model.bin"
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--peft_path', type=str,
+                    default='output/adapter_model.bin')
+parser.add_argument('--r', type=int, default=8)
+args = parser.parse_args()
+
+peft_path = args.peft_path
 peft_config = LoraConfig(
     task_type=TaskType.CAUSAL_LM, inference_mode=True,
-    r=8,
+    r=args.r,
     lora_alpha=32, lora_dropout=0.1
 )
 model = get_peft_model(model, peft_config)

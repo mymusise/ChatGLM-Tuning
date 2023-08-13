@@ -11,21 +11,26 @@ import datasets
 import os
 
 
-tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm-6b", trust_remote_code=True)
+# 从预训练模型加载tokenizer
+# tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm-6b", trust_remote_code=True)
+tokenizer = AutoTokenizer.from_pretrained("/home/che/Models/chatglm-6b", trust_remote_code=True)
 
 
+# 定义FinetuneArguments数据类，用于存储微调的参数
 @dataclass
 class FinetuneArguments:
-    dataset_path: str = field(default="data/alpaca")
-    model_path: str = field(default="output")
-    lora_rank: int = field(default=8)
+    dataset_path: str = field(default="data/alpaca")   # 数据集路径
+    model_path: str = field(default="output")          # 模型保存路径
+    lora_rank: int = field(default=8)                  # Lora排名，用于peft模型的设置
 
 
+# 自定义CastOutputToFloat类，继承自nn.Sequential，用于将输出转换为float32类型
 class CastOutputToFloat(nn.Sequential):
     def forward(self, x):
         return super().forward(x).to(torch.float32)
 
 
+# 数据处理函数data_collator，用于将输入数据按照最长序列长度进行padding
 def data_collator(features: list) -> dict:
     len_ids = [len(feature["input_ids"]) for feature in features]
     longest = max(len_ids)
@@ -49,6 +54,7 @@ def data_collator(features: list) -> dict:
     }
 
 
+# 自定义ModifiedTrainer类，继承自Trainer，用于微调训练，并对模型保存进行了自定义
 class ModifiedTrainer(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False):
         return model(
@@ -68,25 +74,29 @@ class ModifiedTrainer(Trainer):
 
 
 def main():
+    # 创建TensorBoard的SummaryWriter，用于记录训练过程的日志
     writer = SummaryWriter()
+    # 使用HfArgumentParser解析命令行参数并存储为FinetuneArguments和TrainingArguments两个数据类的实例
     finetune_args, training_args = HfArgumentParser(
         (FinetuneArguments, TrainingArguments)
     ).parse_args_into_dataclasses()
 
     # init model
+    # 初始化模型，从预训练模型加载微调模型
     model = AutoModel.from_pretrained(
-        "THUDM/chatglm-6b", load_in_8bit=True, trust_remote_code=True, device_map="auto"
+        "/home/che/Models/chatglm-6b", load_in_8bit=True, trust_remote_code=True, device_map="auto"
     )
-    model.gradient_checkpointing_enable()
-    model.enable_input_require_grads()
-    model.is_parallelizable = True
-    model.model_parallel = True
-    model.lm_head = CastOutputToFloat(model.lm_head)
+    model.gradient_checkpointing_enable()             # 开启梯度检查点
+    model.enable_input_require_grads()                # 开启输入的梯度计算
+    model.is_parallelizable = True                    # 模型可并行计算
+    model.model_parallel = True                       # 使用模型并行计算
+    model.lm_head = CastOutputToFloat(model.lm_head)  # 将输出转换为float32类型
     model.config.use_cache = (
-        False  # silence the warnings. Please re-enable for inference!
+        False  # silence the warnings. Please re-enable for inference! # 关闭缓存以减少内存占用，但在推断时需要重新开启
     )
 
     # setup peft
+    # 设置peft模型，设置LoraConfig，用于构造peft模型
     peft_config = LoraConfig(
         task_type=TaskType.CAUSAL_LM,
         inference_mode=False,
@@ -94,23 +104,27 @@ def main():
         lora_alpha=32,
         lora_dropout=0.1,
     )
+    # 加载peft模型
     model = get_peft_model(model, peft_config)
 
     # load dataset
+    # 从磁盘加载数据集
     dataset = datasets.load_from_disk(finetune_args.dataset_path)
-    print(f"\n{len(dataset)=}\n")
+    print(f"\n{len(dataset)=}\n")  # 打印数据集的样本数量
 
     # start train
+    # 开始训练
     trainer = ModifiedTrainer(
         model=model,
         train_dataset=dataset,
         args=training_args,
-        callbacks=[TensorBoardCallback(writer)],
+        callbacks=[TensorBoardCallback(writer)],  # 添加TensorBoard的回调函数，用于记录训练过程的日志
         data_collator=data_collator,
     )
-    trainer.train()
-    writer.close()
+    trainer.train()  # 执行训练
+    writer.close()   # 关闭TensorBoard的SummaryWriter
     # save model
+    # 保存模型
     model.save_pretrained(training_args.output_dir)
 
 

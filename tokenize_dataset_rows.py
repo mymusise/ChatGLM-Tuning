@@ -6,6 +6,19 @@ import datasets
 import transformers
 
 
+# def preprocess(tokenizer, config, example, max_seq_length):
+#     prompt = example["context"]
+#     target = example["target"]
+#     prompt_ids = tokenizer.encode(prompt, max_length=max_seq_length, truncation=True)
+#     target_ids = tokenizer.encode(
+#         target,
+#         max_length=max_seq_length,
+#         truncation=True,
+#         add_special_tokens=False)
+#     input_ids = prompt_ids + target_ids + [config.eos_token_id]
+#     return {"input_ids": input_ids, "seq_len": len(prompt_ids)}
+
+
 def preprocess(tokenizer, config, example, max_seq_length):
     prompt = example["context"]
     target = example["target"]
@@ -17,6 +30,49 @@ def preprocess(tokenizer, config, example, max_seq_length):
         add_special_tokens=False)
     input_ids = prompt_ids + target_ids + [config.eos_token_id]
     return {"input_ids": input_ids, "seq_len": len(prompt_ids)}
+
+
+def preprocess_chatglm2(tokenizer, config, example, max_seq_length):
+    prompt = example["context"]
+    target = example["target"]
+
+    return {"prompt": prompt, "target": target}
+
+# def preprocess_function_train(examples):
+#     max_seq_length = data_args.max_source_length + data_args.max_target_length + 1
+#
+#     model_inputs = {
+#         "input_ids": [],
+#         "labels": [],
+#     }
+#     for i in range(len(examples[prompt_column])):
+#         if examples[prompt_column][i] and examples[response_column][i]:
+#             query, answer = examples[prompt_column][i], examples[response_column][i]
+#
+#             history = examples[history_column][i] if history_column is not None else None
+#             prompt = tokenizer.build_prompt(query, history)
+#
+#             prompt = prefix + prompt
+#             a_ids = tokenizer.encode(text=prompt, add_special_tokens=True, truncation=True,
+#                                      max_length=data_args.max_source_length)
+#             b_ids = tokenizer.encode(text=answer, add_special_tokens=False, truncation=True,
+#                                      max_length=data_args.max_target_length)
+#
+#             context_length = len(a_ids)
+#             input_ids = a_ids + b_ids + [tokenizer.eos_token_id]
+#             labels = [tokenizer.pad_token_id] * context_length + b_ids + [tokenizer.eos_token_id]
+#
+#             pad_len = max_seq_length - len(input_ids)
+#             input_ids = input_ids + [tokenizer.pad_token_id] * pad_len
+#             labels = labels + [tokenizer.pad_token_id] * pad_len
+#             if data_args.ignore_pad_token_for_loss:
+#                 labels = [(l if l != tokenizer.pad_token_id else -100) for l in labels]
+#
+#             model_inputs["input_ids"].append(input_ids)
+#             model_inputs["labels"].append(labels)
+#
+#     return model_inputs
+
 
 
 def read_jsonl(path, max_seq_length, skip_overlength=False):

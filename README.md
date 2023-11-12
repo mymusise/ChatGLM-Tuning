@@ -26,7 +26,8 @@
 - - python>=3.8
 - - cuda>=11.6, cupti, cuDNN, TensorRT等深度学习环境
 - - pip3 install -r requirements.txt
-
+其中requirements.txt中的安装包bitsandbytes 建议安装0.41.2.post2这个版本，以前的版本可能会提示报错：
+        bitsandbytes/libbitsandbytes_cpu.so: undefined symbol: cget_col_row_stats
 
 ### 数据预处理
 
@@ -56,6 +57,8 @@ python tokenize_dataset_rows.py \
 - `--jsonl_path` 微调的数据路径, 格式jsonl, 对每行的['context']和['target']字段进行encode
 - `--save_path` 输出路径
 - `--max_seq_length` 样本的最大长度
+- `--chatglm_path` 导入模型的路径（可以选择chatglm或chatglm2的不同路径）
+- `--version` 模型的版本（v1指chatglm,v2指chatglm2）
 
 ### 训练
 
@@ -73,7 +76,7 @@ python finetune.py \
     --remove_unused_columns false \
     --logging_steps 50 \
     --output_dir output
-    
+    --chatglm_path model_path/chat_glm
 ```
 
 ### 推理

@@ -37,7 +37,6 @@
 python cover_alpaca2jsonl.py \
     --data_path data/alpaca_data.json \
     --save_path data/alpaca_data.jsonl \
-    
 ```
 
 tokenization
@@ -47,10 +46,7 @@ python tokenize_dataset_rows.py \
     --jsonl_path data/alpaca_data.jsonl \
     --save_path data/alpaca \
     --max_seq_length 200 \ 
-    --skip_overlength  False
-    --chatglm_path model_path/chatglm
-    --version v1                 
-    
+    --skip_overlength
 ```
 
 - `--jsonl_path` 微调的数据路径, 格式jsonl, 对每行的['context']和['target']字段进行encode
@@ -73,7 +69,6 @@ python finetune.py \
     --remove_unused_columns false \
     --logging_steps 50 \
     --output_dir output
-    
 ```
 
 ### 推理

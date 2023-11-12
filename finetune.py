@@ -9,18 +9,19 @@ from peft import get_peft_model, LoraConfig, TaskType
 from dataclasses import dataclass, field
 import datasets
 import os
-from utils import chatglm_path,chatglm2_path
+from utils import chatglm_path, chatglm2_path
+
+tokenizer = ''
 
 
 
-# tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm-6b", trust_remote_code=True)
-tokenizer = AutoTokenizer.from_pretrained(chatglm2_path, trust_remote_code=True)
 
 @dataclass
 class FinetuneArguments:
     dataset_path: str = field(default="data/alpaca")
     model_path: str = field(default="output")
     lora_rank: int = field(default=8)
+    chatglm_path: str = field(default='model_path/chatglm')
 
 
 class CastOutputToFloat(nn.Sequential):
@@ -36,8 +37,9 @@ def data_collator(features: list) -> dict:
     for ids_l, feature in sorted(zip(len_ids, features), key=lambda x: -x[0]):
         ids = feature["input_ids"]
         seq_len = feature["seq_len"]
+
         labels = (
-            [-100] * (seq_len - 1) + ids[(seq_len - 1) :] + [-100] * (longest - ids_l)
+                [-100] * (seq_len - 1) + ids[(seq_len - 1):] + [-100] * (longest - ids_l)
         )
         ids = ids + [tokenizer.pad_token_id] * (longest - ids_l)
         _ids = torch.LongTensor(ids)
@@ -50,68 +52,6 @@ def data_collator(features: list) -> dict:
         "labels": labels,
     }
 
-# def data_collator(examples):
-#     max_source_length = 64
-#     max_target_length = 128
-#     max_seq_length = max_source_length + max_target_length + 1
-#     model_inputs = {
-#         "input_ids": [],
-#         "labels": [],
-#     }
-#     for i in range(len(examples)):
-#
-#         query, answer = examples[i]['prompt'], examples[i]['target']
-#
-#         history =  None
-#         prompt = tokenizer.build_prompt(query, history)
-#         # prompt = prefix + prompt
-#         a_ids = tokenizer.encode(text=prompt, add_special_tokens=True, truncation=True,
-#                                  max_length=max_source_length)
-#         b_ids = tokenizer.encode(text=answer, add_special_tokens=False, truncation=True,
-#                                  max_length=max_target_length)
-#         context_length = len(a_ids)
-#         input_ids = a_ids + b_ids + [tokenizer.eos_token_id]
-#         labels = [tokenizer.pad_token_id] * context_length + b_ids + [tokenizer.eos_token_id]
-#
-#         pad_len = max_seq_length - len(input_ids)
-#         input_ids = input_ids + [tokenizer.pad_token_id] * pad_len
-#         labels = labels + [tokenizer.pad_token_id] * pad_len
-#         if True:
-#             labels = [(l if l != tokenizer.pad_token_id else -100) for l in labels]
-#         # 转换为tensor
-#         input_ids = torch.LongTensor(input_ids)
-#         labels = torch.LongTensor(labels)
-#
-#         model_inputs["input_ids"].append(input_ids)
-#         model_inputs["labels"].append(labels)
-#     model_inputs["input_ids"] = torch.stack(model_inputs["input_ids"])
-#     model_inputs["labels"] = torch.stack(model_inputs["labels"])
-#     return model_inputs
-
-# def data_collator(features: list) -> dict:
-#     len_ids = [len(feature["input_ids"]) for feature in features]
-#     longest = max(len_ids)
-#     input_ids = []
-#     labels_list = []
-#     for ids_l, feature in sorted(zip(len_ids, features), key=lambda x: -x[0]):
-#         ids = feature["input_ids"]
-#         seq_len = feature["seq_len"]
-#         labels = (
-#             [-100] * (seq_len - 1) + ids[(seq_len - 1) :] + [-100] * (longest - ids_l)
-#         )
-#         ids = ids + [tokenizer.pad_token_id] * (longest - ids_l)
-#         _ids = torch.LongTensor(ids)
-#         labels_list.append(torch.LongTensor(labels))
-#         input_ids.append(_ids)
-#     input_ids = torch.stack(input_ids)
-#     labels = torch.stack(labels_list)
-#     return {
-#         "input_ids": input_ids,
-#         "labels": labels,
-#     }
-#
-#
-#
 
 class ModifiedTrainer(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False):
@@ -133,17 +73,18 @@ class ModifiedTrainer(Trainer):
 
 def main():
     writer = SummaryWriter()
+
     finetune_args, training_args = HfArgumentParser(
         (FinetuneArguments, TrainingArguments)
     ).parse_args_into_dataclasses()
 
     # init model
-    # model = AutoModel.from_pretrained(
-    #     "THUDM/chatglm-6b", load_in_8bit=True, trust_remote_code=True, device_map="auto"
-    # )
+
     model = AutoModel.from_pretrained(
-        chatglm2_path, load_in_8bit=True, trust_remote_code=True, device_map="auto"
+        finetune_args.chatglm_path, load_in_8bit=True, trust_remote_code=True, device_map="auto"
     )
+    global  tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(finetune_args.chatglm_path, trust_remote_code=True)
     model.gradient_checkpointing_enable()
     model.enable_input_require_grads()
     model.is_parallelizable = True

@@ -93,6 +93,12 @@ python finetune.py \
 
 </details>
 
+### 部署
+
+文件夹下`web_demo.py`，`web_demo2.py`与`api.py`的使用方法与官方的一致。
+
+使用前需要修改`peft_path`为你自己训练的模型路径，修改`peft_config`中的`r`与你训练时的`--lora_rank`一致。
+
 
 ## S2. Reward Model
 

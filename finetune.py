@@ -9,9 +9,11 @@ from peft import get_peft_model, LoraConfig, TaskType
 from dataclasses import dataclass, field
 import datasets
 import os
+from utils import chatglm_path, chatglm2_path
+
+tokenizer = ''
 
 
-tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm-6b", trust_remote_code=True)
 
 
 @dataclass
@@ -19,6 +21,7 @@ class FinetuneArguments:
     dataset_path: str = field(default="data/alpaca")
     model_path: str = field(default="output")
     lora_rank: int = field(default=8)
+    chatglm_path: str = field(default='model_path/chatglm')
 
 
 class CastOutputToFloat(nn.Sequential):
@@ -34,8 +37,9 @@ def data_collator(features: list) -> dict:
     for ids_l, feature in sorted(zip(len_ids, features), key=lambda x: -x[0]):
         ids = feature["input_ids"]
         seq_len = feature["seq_len"]
+
         labels = (
-            [-100] * (seq_len - 1) + ids[(seq_len - 1) :] + [-100] * (longest - ids_l)
+                [-100] * (seq_len - 1) + ids[(seq_len - 1):] + [-100] * (longest - ids_l)
         )
         ids = ids + [tokenizer.pad_token_id] * (longest - ids_l)
         _ids = torch.LongTensor(ids)
@@ -69,19 +73,23 @@ class ModifiedTrainer(Trainer):
 
 def main():
     writer = SummaryWriter()
+
     finetune_args, training_args = HfArgumentParser(
         (FinetuneArguments, TrainingArguments)
     ).parse_args_into_dataclasses()
 
     # init model
+
     model = AutoModel.from_pretrained(
-        "THUDM/chatglm-6b", load_in_8bit=True, trust_remote_code=True, device_map="auto"
+        finetune_args.chatglm_path, load_in_8bit=True, trust_remote_code=True, device_map="auto"
     )
+    global  tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(finetune_args.chatglm_path, trust_remote_code=True)
     model.gradient_checkpointing_enable()
     model.enable_input_require_grads()
     model.is_parallelizable = True
     model.model_parallel = True
-    model.lm_head = CastOutputToFloat(model.lm_head)
+    # model.lm_head = CastOutputToFloat(model.lm_head)
     model.config.use_cache = (
         False  # silence the warnings. Please re-enable for inference!
     )

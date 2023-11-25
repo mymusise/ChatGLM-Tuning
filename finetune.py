@@ -3,17 +3,13 @@ from torch.utils.tensorboard import SummaryWriter
 from transformers import TrainingArguments
 from transformers import Trainer, HfArgumentParser
 from transformers import AutoTokenizer, AutoModel
+from transformers import PreTrainedTokenizerBase
 import torch
 import torch.nn as nn
 from peft import get_peft_model, LoraConfig, TaskType
 from dataclasses import dataclass, field
 import datasets
 import os
-from utils import chatglm_path, chatglm2_path
-
-tokenizer = ''
-
-
 
 
 @dataclass
@@ -21,7 +17,7 @@ class FinetuneArguments:
     dataset_path: str = field(default="data/alpaca")
     model_path: str = field(default="output")
     lora_rank: int = field(default=8)
-    chatglm_path: str = field(default='model_path/chatglm')
+    chatglm_path: str = field(default="model_path/chatglm")
 
 
 class CastOutputToFloat(nn.Sequential):
@@ -29,28 +25,34 @@ class CastOutputToFloat(nn.Sequential):
         return super().forward(x).to(torch.float32)
 
 
-def data_collator(features: list) -> dict:
-    len_ids = [len(feature["input_ids"]) for feature in features]
-    longest = max(len_ids)
-    input_ids = []
-    labels_list = []
-    for ids_l, feature in sorted(zip(len_ids, features), key=lambda x: -x[0]):
-        ids = feature["input_ids"]
-        seq_len = feature["seq_len"]
+@dataclass
+class DataCollator:
+    tokenizer: PreTrainedTokenizerBase
 
-        labels = (
-                [-100] * (seq_len - 1) + ids[(seq_len - 1):] + [-100] * (longest - ids_l)
-        )
-        ids = ids + [tokenizer.pad_token_id] * (longest - ids_l)
-        _ids = torch.LongTensor(ids)
-        labels_list.append(torch.LongTensor(labels))
-        input_ids.append(_ids)
-    input_ids = torch.stack(input_ids)
-    labels = torch.stack(labels_list)
-    return {
-        "input_ids": input_ids,
-        "labels": labels,
-    }
+    def __call__(self, features: list) -> dict:
+        len_ids = [len(feature["input_ids"]) for feature in features]
+        longest = max(len_ids)
+        input_ids = []
+        labels_list = []
+        for ids_l, feature in sorted(zip(len_ids, features), key=lambda x: -x[0]):
+            ids = feature["input_ids"]
+            seq_len = feature["seq_len"]
+
+            labels = (
+                [-100] * (seq_len - 1)
+                + ids[(seq_len - 1) :]
+                + [-100] * (longest - ids_l)
+            )
+            ids = ids + [self.tokenizer.pad_token_id] * (longest - ids_l)
+            _ids = torch.LongTensor(ids)
+            labels_list.append(torch.LongTensor(labels))
+            input_ids.append(_ids)
+        input_ids = torch.stack(input_ids)
+        labels = torch.stack(labels_list)
+        return {
+            "input_ids": input_ids,
+            "labels": labels,
+        }
 
 
 class ModifiedTrainer(Trainer):
@@ -81,10 +83,14 @@ def main():
     # init model
 
     model = AutoModel.from_pretrained(
-        finetune_args.chatglm_path, load_in_8bit=True, trust_remote_code=True, device_map="auto"
+        finetune_args.chatglm_path,
+        load_in_8bit=True,
+        trust_remote_code=True,
+        device_map="auto",
     )
-    global  tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(finetune_args.chatglm_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(
+        finetune_args.chatglm_path, trust_remote_code=True
+    )
     model.gradient_checkpointing_enable()
     model.enable_input_require_grads()
     model.is_parallelizable = True
@@ -114,7 +120,7 @@ def main():
         train_dataset=dataset,
         args=training_args,
         callbacks=[TensorBoardCallback(writer)],
-        data_collator=data_collator,
+        data_collator=DataCollator(tokenizer),
     )
     trainer.train()
     writer.close()
